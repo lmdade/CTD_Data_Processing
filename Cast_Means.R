@@ -81,3 +81,34 @@ tbl <- df %>%
   relocate("Lat", .after = "Long")
 View(tbl)
 
+##########
+clean <- clean_ctd_df("Oce_Package_ACSII/February/20230222_FB.asc")
+
+mean <- colMeans(clean, na.rm = TRUE) %>% 
+  set_names(paste0('Mean_',  names(.))) %>%
+  as.data.frame() 
+
+sd <-  colMads(clean, na.rm = TRUE) %>%
+  set_names(paste0('SD_',  names(.))) %>% 
+  as.data.frame()
+
+max <- colMaxs(clean, na.rm = TRUE) %>%
+  set_names(paste0('Max_',  names(.))) %>% 
+  as.data.frame()
+
+min <- colMins(clean, na.rm = TRUE) %>%
+  set_names(paste0('Min_',  names(.))) %>% 
+  as.data.frame()
+
+tbl <- rbind(mean, sd,  min, max) %>%
+  rownames_to_column("par") %>% 
+  pivot_wider(names_from = "par",  values_from = ".") %>%
+  mutate(Cast_ID = "20230222_FB") %>%
+  left_join(meta, by  =  "Cast_ID") %>%
+  select(-c("Old_Name", "Notes")) %>% 
+  relocate("Cast_ID", .before = "Mean_Pressure") %>% 
+  relocate("Month", .after = "Cast_ID") %>% 
+  relocate("Location", .after = "Month") %>% 
+  relocate("Instrument_Time", .after = "Location") %>% 
+  relocate("Long", .after = "Instrument_Time") %>% 
+  relocate("Lat", .after = "Long")
